@@ -1,92 +1,38 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code when working in this repository.
 
-## Project Overview
+## Repository layout
 
-Antigravity Kit is an AI-powered design intelligence toolkit providing searchable databases of UI styles, color palettes, font pairings, chart types, and UX guidelines. It works as a skill/workflow for AI coding assistants (Claude Code, Windsurf, Cursor, etc.).
+This repository hosts two independent things:
 
-## Search Command
+```
+/                                   # Whoop-style productivity SaaS (Next.js + Supabase)
+packages/ui-ux-pro-max-skill/       # Original "Antigravity Kit" design-intelligence skill/CLI (unchanged, still publishable standalone)
+.claude/skills/                     # Claude Code skills available in this repo (ui-ux-pro-max symlinks into packages/ui-ux-pro-max-skill/)
+```
+
+The `packages/ui-ux-pro-max-skill/` package is untouched in behavior — see `packages/ui-ux-pro-max-skill/CLAUDE.md` for its own instructions (search command, sync rules, architecture). Do not edit it as part of SaaS feature work unless explicitly asked.
+
+## SaaS project overview
+
+A dashboard that turns real work activity into productivity scores (Whoop-style), with a personal analytics view and a group view with a weekly leaderboard. Target users: solopreneurs, freelancers, small tech teams.
+
+Stack: Next.js (App Router, TypeScript strict), Supabase (Postgres, Auth, RLS everywhere), Tailwind CSS, Recharts. Local Supabase dev via Supabase CLI/Docker — no hosted project during MVP development.
+
+For UI styling, color palettes, typography, and component conventions, use the `ui-ux-pro-max` skill (available in this repo) rather than reinventing patterns — it is invocable via the Skill tool or directly:
 
 ```bash
-python3 src/ui-ux-pro-max/scripts/search.py "<query>" --domain <domain> [-n <max_results>]
+python3 packages/ui-ux-pro-max-skill/src/ui-ux-pro-max/scripts/search.py "<query>" --stack nextjs
 ```
 
-**Domain search:**
-- `product` - Product type recommendations (SaaS, e-commerce, portfolio)
-- `style` - UI styles (glassmorphism, minimalism, brutalism) + AI prompts and CSS keywords
-- `typography` - Font pairings with Google Fonts imports
-- `color` - Color palettes by product type
-- `landing` - Page structure and CTA strategies
-- `chart` - Chart types and library recommendations
-- `ux` - Best practices and anti-patterns
+## Scoring engine
 
-**Stack search:**
-```bash
-python3 src/ui-ux-pro-max/scripts/search.py "<query>" --stack <stack>
-```
-Available stacks: `html-tailwind` (default), `react`, `nextjs`, `astro`, `vue`, `nuxtjs`, `nuxt-ui`, `svelte`, `swiftui`, `react-native`, `flutter`, `shadcn`, `jetpack-compose`
+The scoring logic lives in `lib/scoring/` and must stay isolated from UI code, with unit tests covering the key cases (difficult goal vs. several easy goals, no-calendar fallback, consistency vs. single-day overwork). Weight constants for the composite score live at the top of the module.
 
-## Architecture
+## Out of scope for the MVP
 
-```
-src/ui-ux-pro-max/                # Source of Truth
-├── data/                         # Canonical CSV databases
-│   ├── products.csv, styles.csv, colors.csv, typography.csv, ...
-│   └── stacks/                   # Stack-specific guidelines
-├── scripts/
-│   ├── search.py                 # CLI entry point
-│   ├── core.py                   # BM25 + regex hybrid search engine
-│   └── design_system.py          # Design system generation
-└── templates/
-    ├── base/                     # Base templates (skill-content.md, quick-reference.md)
-    └── platforms/                # Platform configs (claude.json, cursor.json, ...)
-
-cli/                              # CLI installer (uipro-cli on npm)
-├── src/
-│   ├── commands/init.ts          # Install command with template generation
-│   └── utils/template.ts         # Template rendering engine
-└── assets/                       # Bundled assets (~564KB)
-    ├── data/                     # Copy of src/ui-ux-pro-max/data/
-    ├── scripts/                  # Copy of src/ui-ux-pro-max/scripts/
-    └── templates/                # Copy of src/ui-ux-pro-max/templates/
-
-.claude/skills/ui-ux-pro-max/     # Claude Code skill (symlinks to src/)
-.factory/skills/ui-ux-pro-max/   # Droid (Factory) skill (symlinks to src/)
-.shared/ui-ux-pro-max/            # Symlink to src/ui-ux-pro-max/
-.claude-plugin/                   # Claude Marketplace publishing
-```
-
-The search engine uses BM25 ranking combined with regex matching. Domain auto-detection is available when `--domain` is omitted.
-
-## Sync Rules
-
-**Source of Truth:** `src/ui-ux-pro-max/`
-
-When modifying files:
-
-1. **Data & Scripts** - Edit in `src/ui-ux-pro-max/`:
-   - `data/*.csv` and `data/stacks/*.csv`
-   - `scripts/*.py`
-   - Changes automatically available via symlinks in `.claude/`, `.factory/`, `.shared/`
-
-2. **Templates** - Edit in `src/ui-ux-pro-max/templates/`:
-   - `base/skill-content.md` - Common SKILL.md content
-   - `base/quick-reference.md` - Quick reference section (Claude only)
-   - `platforms/*.json` - Platform-specific configs
-
-3. **CLI Assets** - Run sync before publishing:
-   ```bash
-   cp -r src/ui-ux-pro-max/data/* cli/assets/data/
-   cp -r src/ui-ux-pro-max/scripts/* cli/assets/scripts/
-   cp -r src/ui-ux-pro-max/templates/* cli/assets/templates/
-   ```
-
-4. **Reference Folders** - No manual sync needed. The CLI generates these from templates during `uipro init`.
-
-## Prerequisites
-
-Python 3.x (no external dependencies required)
+AI coaching, integrations beyond Google Calendar, native mobile app, payments/subscriptions, push notifications, multi-language support. English-only UI.
 
 ## Git Workflow
 
