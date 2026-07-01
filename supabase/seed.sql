@@ -1,0 +1,2 @@
+-- Demo seed data (multiple days of check-ins/scores + a demo group) is
+-- added once the scoring engine and group schema exist (later build steps).

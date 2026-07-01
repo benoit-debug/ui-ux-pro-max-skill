@@ -47,6 +47,16 @@ out/
 .env.local
 .env.*.local
 
+# Next.js / TypeScript
+next-env.d.ts
+*.tsbuildinfo
+.vercel
+coverage/
+
+# Supabase local dev
+supabase/.branches
+supabase/.temp
+
 # Local settings
 .claude/settings.local.json
 .claude/session-state/
