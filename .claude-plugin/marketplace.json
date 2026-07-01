@@ -30,6 +30,28 @@
       ],
       "category": "design",
       "strict": false
+    },
+    {
+      "name": "gstack",
+      "source": {
+        "source": "github",
+        "repo": "garrytan/gstack"
+      },
+      "description": "Garry Tan's Claude Code skill suite for solo SaaS builders: CEO/eng/design plan reviews, /ship, /qa, /investigate, a headless browser CLI, and a design CLI. Complementary to ui-ux-pro-max for full-stack SaaS creation.",
+      "author": {
+        "name": "garrytan"
+      },
+      "homepage": "https://github.com/garrytan/gstack",
+      "keywords": [
+        "saas",
+        "workflow",
+        "qa",
+        "ship",
+        "browser-automation",
+        "review"
+      ],
+      "category": "workflow",
+      "strict": false
     }
   ]
 }
