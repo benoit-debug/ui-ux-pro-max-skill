@@ -2,7 +2,7 @@
 
 A dashboard that turns real work activity into performance scores (Whoop-style, for professional productivity), with a personal analytics view and a group view with a weekly leaderboard.
 
-> Status: auth, onboarding, daily check-in/check-out, Google Calendar data capture, and the scoring engine are in place. The full dashboard (trends, history, correlations) and groups land in later build steps — see `CLAUDE.md`.
+> Status: auth, onboarding, daily check-in/check-out, Google Calendar data capture, the scoring engine, and the personal dashboard (today's score, 7/30-day trends, a correlation insight, and check-in history) are in place. Groups land in the next build step — see `CLAUDE.md`.
 
 ## Repository layout
 
@@ -45,11 +45,22 @@ To reset the local database (re-applies all migrations from scratch):
 npx supabase db reset
 ```
 
+### Demo data
+
+To populate a demo account with ~3 weeks of check-ins, calendar data, and scores
+(so the dashboard and history are filled without waiting for real data):
+```bash
+SUPABASE_SERVICE_ROLE_KEY=<service_role key from `npx supabase status`> npm run seed
+```
+Then log in with **demo@example.com / password123**. Scores are computed through
+the real `lib/scoring` engine, so seeded data matches live check-ins. Re-running
+the command resets the demo account.
+
 ## What's mocked / simplified so far
 
-- The dashboard shows today's score and goals but not yet trends, history, or correlations — that's the next build step.
 - Calendar sync and score computation are opportunistic (run on check-in/check-out page loads), not a background job — there's no scheduled infra in this MVP.
 - Deep-work slots and fragmentation are derived from a fixed 8am-7pm working-hours window, not the user's actual work schedule.
 - Day boundaries for "today" use the offset at local midnight, which can be off by the DST amount on a transition day.
 - Consistency is measured over a fixed 7-day window regardless of account age, so a brand-new account can't score above (days since sign-up)/7 yet.
-- No demo/seed dataset yet (`supabase/seed.sql` is a stub) — added once groups exist.
+- The dashboard's "Pattern" insight tests a small fixed set of hypotheses (meetings vs. output/focus, energy vs. output), not an open-ended search.
+- Groups and the weekly leaderboard are not built yet — that's the next step.

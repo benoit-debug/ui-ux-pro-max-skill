@@ -1,8 +1,12 @@
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/ui/link-button";
+import { TrendChart } from "@/components/dashboard/trend-chart";
 import { signOut } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
+import { getScoreHistory } from "@/lib/dashboard/queries";
+import { findTopInsight } from "@/lib/insights/correlation";
 import { todayInTimezone } from "@/lib/time/today";
 
 interface Goal {
@@ -65,6 +69,18 @@ export default async function DashboardPage() {
         .eq("day", today)
         .maybeSingle()
     : { data: null };
+
+  const history = user ? await getScoreHistory(supabase, user.id, today, 30) : [];
+  const insight = findTopInsight(
+    history.map((h) => ({
+      outputScore: h.output,
+      focusScore: h.focus,
+      compositeScore: h.composite,
+      meetingMinutes: h.meetingMinutes,
+      energy: h.energy,
+    })),
+  );
+  const hasTrendData = history.some((h) => h.composite !== null);
 
   const goals = (checkin?.goals ?? []) as Goal[];
 
@@ -129,6 +145,35 @@ export default async function DashboardPage() {
 
       <Card>
         <CardHeader>
+          <CardTitle>Trends</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {hasTrendData ? (
+            <TrendChart history={history} />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Trends appear once you have a few days of scores.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {insight && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Pattern</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm">{insight.text}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Based on {insight.sampleSize} days of data.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      <Card>
+        <CardHeader>
           <CardTitle>Today&apos;s goals</CardTitle>
         </CardHeader>
         <CardContent>
@@ -181,10 +226,12 @@ export default async function DashboardPage() {
         </CardContent>
       </Card>
 
-      <p className="text-sm text-muted-foreground">
-        Trends (7/30-day charts), correlations, and check-in history land in
-        a later build step.
-      </p>
+      <Link
+        href="/history"
+        className="block text-center text-sm text-muted-foreground underline underline-offset-4"
+      >
+        View check-in history
+      </Link>
     </div>
   );
 }
