@@ -339,8 +339,12 @@ email_optional = false
 
 # Google OAuth. Read-only Calendar scope is requested at sign-in time from the app code
 # (see lib/supabase/client.ts), not configured here.
+# Disabled by default so `supabase start` works out of the box without Google
+# credentials. To enable email+password is unaffected. To turn Google on:
+# set enabled = true, then export SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID and
+# SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET in your shell before `supabase start`.
 [auth.external.google]
-enabled = true
+enabled = false
 client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
 secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
 redirect_uri = "http://127.0.0.1:54321/auth/v1/callback"
