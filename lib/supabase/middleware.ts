@@ -34,7 +34,10 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isPublicPath = PUBLIC_PATHS.some((p) => path.startsWith(p));
+  // Root is the public marketing landing (exact match, so it doesn't swallow
+  // every other route the way startsWith("/") would).
+  const isPublicPath =
+    path === "/" || PUBLIC_PATHS.some((p) => path.startsWith(p));
 
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();
