@@ -2,7 +2,7 @@
 
 A dashboard that turns real work activity into performance scores (Whoop-style, for professional productivity), with a personal analytics view and a group view with a weekly leaderboard.
 
-> Status: auth, onboarding, daily check-in/check-out, Google Calendar data capture, the scoring engine, and the personal dashboard (today's score, 7/30-day trends, a correlation insight, and check-in history) are in place. Groups land in the next build step — see `CLAUDE.md`.
+> Status: feature-complete MVP — auth, onboarding, daily check-in/check-out, Google Calendar data capture, the scoring engine, the personal dashboard (today's score, 7/30-day trends, a correlation insight, check-in history), and groups with a weekly leaderboard. Account deletion (GDPR) is the remaining finishing task — see `CLAUDE.md`.
 
 ## Repository layout
 
@@ -63,4 +63,6 @@ the command resets the demo account.
 - Day boundaries for "today" use the offset at local midnight, which can be off by the DST amount on a transition day.
 - Consistency is measured over a fixed 7-day window regardless of account age, so a brand-new account can't score above (days since sign-up)/7 yet.
 - The dashboard's "Pattern" insight tests a small fixed set of hypotheses (meetings vs. output/focus, energy vs. output), not an open-ended search.
-- Groups and the weekly leaderboard are not built yet — that's the next step.
+- The group leaderboard resets every Monday (ISO week). Members see each other's composite score and week-over-week progression only — never sub-scores, explanations, or goal content (enforced via a `SECURITY DEFINER` function that emits only composite aggregates; `daily_scores` stays owner-only and `daily_checkins` is never exposed).
+- Accepting a group invite requires being logged in first: an unauthenticated visitor opening an invite link is sent to `/login`, then reopens the link once signed in (no post-login redirect chaining yet).
+- Invite links are shareable and reusable (not single-use or time-limited).

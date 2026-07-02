@@ -226,12 +226,14 @@ export default async function DashboardPage() {
         </CardContent>
       </Card>
 
-      <Link
-        href="/history"
-        className="block text-center text-sm text-muted-foreground underline underline-offset-4"
-      >
-        View check-in history
-      </Link>
+      <div className="flex justify-center gap-6 text-sm text-muted-foreground">
+        <Link href="/history" className="underline underline-offset-4">
+          Check-in history
+        </Link>
+        <Link href="/groups" className="underline underline-offset-4">
+          Groups
+        </Link>
+      </div>
     </div>
   );
 }

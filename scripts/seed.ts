@@ -1,6 +1,7 @@
 /**
- * Seeds a demo account with ~3 weeks of check-ins, calendar data, and scores
- * so the dashboard and history are populated immediately.
+ * Seeds demo accounts with ~3 weeks of check-ins, calendar data, and scores,
+ * plus a demo group with a populated weekly leaderboard, so the dashboard,
+ * history, and group views are all filled immediately.
  *
  * Scores are computed through the real lib/scoring engine (not reimplemented
  * in SQL), so seeded data always matches what a live check-in would produce.
@@ -9,7 +10,7 @@
  *   npx supabase start
  *   SUPABASE_SERVICE_ROLE_KEY=<key from `npx supabase status`> npm run seed
  *
- * Demo login: demo@example.com / password123
+ * Demo login: demo@example.com / password123 (teammates share the password).
  */
 import { createClient } from "@supabase/supabase-js";
 import { computeDailyScore } from "../lib/scoring/index";
@@ -19,9 +20,15 @@ import type { Difficulty } from "../lib/scoring/types";
 const SUPABASE_URL = process.env.SUPABASE_URL ?? "http://127.0.0.1:54321";
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const DEMO_EMAIL = "demo@example.com";
-const DEMO_PASSWORD = "password123";
+const PASSWORD = "password123";
 const DAYS = 21;
+
+const USERS = [
+  { email: "demo@example.com", name: "Demo User", meetingBias: 0, ranked: true },
+  { email: "alex@example.com", name: "Alex Rivera", meetingBias: -25, ranked: true },
+  { email: "sam@example.com", name: "Sam Chen", meetingBias: 40, ranked: true },
+  { email: "jo@example.com", name: "Jo Kim", meetingBias: 10, ranked: false },
+] as const;
 
 if (!SERVICE_ROLE_KEY) {
   console.error(
@@ -58,17 +65,19 @@ interface DayPlan {
 }
 
 // Deterministic pattern with a deliberate inverse meetings-vs-output
-// relationship, so the dashboard's "Pattern" insight has something real to
-// surface. Weekends (every 7th/8th slot) are skipped to make consistency and
-// the no-check-in gaps realistic.
-function planDay(i: number): DayPlan {
+// relationship (so the dashboard's "Pattern" insight has something real to
+// surface) and a per-user meeting bias (so leaderboard ranks differ).
+// Weekends are skipped to make consistency and no-check-in gaps realistic.
+function planDay(i: number, meetingBias: number): DayPlan {
   const day = isoDaysAgo(DAYS - 1 - i);
   const weekdayIndex = i % 7;
   const skipped = weekdayIndex === 5 || weekdayIndex === 6;
 
-  const meetingMinutes = [45, 90, 210, 60, 150, 0, 0][weekdayIndex] + (i % 3) * 15;
+  const meetingMinutes = Math.max(
+    0,
+    [45, 90, 210, 60, 150, 0, 0][weekdayIndex] + (i % 3) * 15 + meetingBias,
+  );
 
-  // More meetings -> fewer goals achieved (by weight), driving the correlation.
   const difficulties: Difficulty[] = ["high", "medium", "low"];
   let achievedFlags: boolean[];
   if (meetingMinutes < 60) achievedFlags = [true, true, true];
@@ -95,45 +104,38 @@ function planDay(i: number): DayPlan {
   };
 }
 
-async function resetDemoUser(): Promise<string> {
+async function resetUser(email: string, name: string): Promise<string> {
   const { data: list } = await supabase.auth.admin.listUsers();
-  const existing = list?.users.find((u) => u.email === DEMO_EMAIL);
+  const existing = list?.users.find((u) => u.email === email);
   if (existing) {
-    // Cascades to profiles/check-ins/scores/calendar via FK on delete cascade.
+    // Cascades to all owned rows via FK on delete cascade.
     await supabase.auth.admin.deleteUser(existing.id);
   }
 
   const { data, error } = await supabase.auth.admin.createUser({
-    email: DEMO_EMAIL,
-    password: DEMO_PASSWORD,
+    email,
+    password: PASSWORD,
     email_confirm: true,
-    user_metadata: { full_name: "Demo User" },
+    user_metadata: { full_name: name },
   });
-  if (error || !data.user) throw error ?? new Error("Failed to create demo user");
+  if (error || !data.user) throw error ?? new Error(`Failed to create ${email}`);
   return data.user.id;
 }
 
-async function main() {
-  const userId = await resetDemoUser();
-
+async function seedUserData(userId: string, name: string, meetingBias: number) {
   await supabase
     .from("profiles")
     .update({
-      full_name: "Demo User",
+      full_name: name,
       timezone: "Europe/Paris",
       onboarding_completed_at: new Date().toISOString(),
     })
     .eq("id", userId);
 
-  const plans = Array.from({ length: DAYS }, (_, i) => planDay(i));
+  const plans = Array.from({ length: DAYS }, (_, i) => planDay(i, meetingBias));
   const ratioByDay = new Map<string, number | null>();
-
   for (const plan of plans) {
-    if (plan.skipped) {
-      ratioByDay.set(plan.day, null);
-      continue;
-    }
-    ratioByDay.set(plan.day, computeGoalCompletionRatio(plan.goals));
+    ratioByDay.set(plan.day, plan.skipped ? null : computeGoalCompletionRatio(plan.goals));
   }
 
   for (const plan of plans) {
@@ -191,9 +193,41 @@ async function main() {
       },
     });
   }
+}
 
-  console.log(`Seeded ${plans.filter((p) => !p.skipped).length} days for ${DEMO_EMAIL}`);
-  console.log(`Log in with ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
+async function main() {
+  const ids: Record<string, string> = {};
+
+  for (const u of USERS) {
+    const id = await resetUser(u.email, u.name);
+    ids[u.email] = id;
+    await seedUserData(id, u.name, u.meetingBias);
+  }
+
+  // Demo user owns a group; the trigger adds them as a participating member.
+  const ownerId = ids["demo@example.com"];
+  const { data: group, error: groupError } = await supabase
+    .from("groups")
+    .insert({ name: "Founders Circle", owner_id: ownerId })
+    .select("id")
+    .single();
+  if (groupError || !group) throw groupError ?? new Error("Failed to create group");
+
+  for (const u of USERS) {
+    if (u.email === "demo@example.com") continue;
+    await supabase.from("group_members").insert({
+      group_id: group.id,
+      user_id: ids[u.email],
+      participates_in_ranking: u.ranked,
+    });
+  }
+
+  await supabase
+    .from("group_invites")
+    .insert({ group_id: group.id, created_by: ownerId });
+
+  console.log(`Seeded ${USERS.length} users and group "Founders Circle".`);
+  console.log(`Log in with demo@example.com / ${PASSWORD}`);
 }
 
 main().catch((err) => {
