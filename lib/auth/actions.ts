@@ -107,54 +107,6 @@ export async function saveProfileBasics(formData: FormData) {
   redirect("/onboarding/calendar");
 }
 
-type Difficulty = "low" | "medium" | "high";
-
-export async function completeOnboarding(formData: FormData) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const goals = [1, 2, 3]
-    .map((n) => ({
-      text: String(formData.get(`goal${n}`) ?? "").trim(),
-      difficulty: (formData.get(`difficulty${n}`) ?? "medium") as Difficulty,
-    }))
-    .filter((g) => g.text.length > 0)
-    .map((g, i) => ({
-      id: `${Date.now()}-${i}`,
-      text: g.text,
-      difficulty: g.difficulty,
-      achieved: null as boolean | null,
-    }));
-
-  if (goals.length === 0) {
-    redirect(
-      `/onboarding/goal?error=${encodeURIComponent("Add at least one goal to get started")}`,
-    );
-  }
-
-  const today = new Date().toISOString().slice(0, 10);
-
-  const { error: checkinError } = await supabase
-    .from("daily_checkins")
-    .upsert({ user_id: user.id, day: today, goals }, { onConflict: "user_id,day" });
-  if (checkinError) {
-    redirect(`/onboarding/goal?error=${encodeURIComponent(checkinError.message)}`);
-  }
-
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .update({ onboarding_completed_at: new Date().toISOString() })
-    .eq("id", user.id);
-  if (profileError) {
-    redirect(`/onboarding/goal?error=${encodeURIComponent(profileError.message)}`);
-  }
-
-  redirect("/dashboard");
-}
-
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
