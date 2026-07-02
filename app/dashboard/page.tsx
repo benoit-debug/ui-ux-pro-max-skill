@@ -233,6 +233,9 @@ export default async function DashboardPage() {
         <Link href="/groups" className="underline underline-offset-4">
           Groups
         </Link>
+        <Link href="/account" className="underline underline-offset-4">
+          Account
+        </Link>
       </div>
     </div>
   );
