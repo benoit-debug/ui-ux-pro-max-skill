@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormError } from "@/components/ui/form-error";
+import { AppHeader } from "@/components/app-header";
 import { deleteAccount } from "@/lib/account/actions";
 import { createClient } from "@/lib/supabase/server";
 
@@ -26,16 +26,10 @@ export default async function AccountPage({
     .single();
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 px-4 py-10">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Account</h1>
-        <Link
-          href="/dashboard"
-          className="text-sm text-muted-foreground underline underline-offset-4"
-        >
-          Back to dashboard
-        </Link>
-      </div>
+    <>
+      <AppHeader />
+      <main className="mx-auto max-w-2xl space-y-6 px-4 py-8">
+      <h1 className="text-lg font-semibold">Account</h1>
 
       <FormError message={error} />
 
@@ -71,6 +65,7 @@ export default async function AccountPage({
           </form>
         </CardContent>
       </Card>
-    </div>
+      </main>
+    </>
   );
 }

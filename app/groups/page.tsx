@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/ui/form-error";
 import { Input } from "@/components/ui/input";
+import { AppHeader } from "@/components/app-header";
 import { createGroup } from "@/lib/groups/actions";
 import { createClient } from "@/lib/supabase/server";
 
@@ -40,16 +41,10 @@ export default async function GroupsPage({
     }));
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 px-4 py-10">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Groups</h1>
-        <Link
-          href="/dashboard"
-          className="text-sm text-muted-foreground underline underline-offset-4"
-        >
-          Back to dashboard
-        </Link>
-      </div>
+    <>
+      <AppHeader />
+      <main className="mx-auto max-w-2xl space-y-6 px-4 py-8">
+      <h1 className="text-lg font-semibold">Groups</h1>
 
       <FormError message={error} />
 
@@ -84,6 +79,7 @@ export default async function GroupsPage({
           </form>
         </CardContent>
       </Card>
-    </div>
+      </main>
+    </>
   );
 }

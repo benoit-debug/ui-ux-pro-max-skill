@@ -1,6 +1,6 @@
-# Productivity Score (MVP)
+# Vitals (MVP)
 
-A dashboard that turns real work activity into performance scores (Whoop-style, for professional productivity), with a personal analytics view and a group view with a weekly leaderboard.
+**The vitals of your workday.** A dashboard that turns real work activity into performance scores (Whoop-style, for professional productivity), with a personal analytics view and a group view with a weekly leaderboard.
 
 > Status: feature-complete MVP — auth, onboarding, daily check-in/check-out, Google Calendar data capture, the scoring engine, the personal dashboard (today's score, 7/30-day trends, a correlation insight, check-in history), groups with a weekly leaderboard, and GDPR account deletion.
 

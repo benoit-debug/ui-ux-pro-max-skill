@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppHeader } from "@/components/app-header";
 import { createClient } from "@/lib/supabase/server";
 import { todayInTimezone } from "@/lib/time/today";
 
@@ -54,16 +54,10 @@ export default async function HistoryPage() {
   );
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 px-4 py-10">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Check-in history</h1>
-        <Link
-          href="/dashboard"
-          className="text-sm text-muted-foreground underline underline-offset-4"
-        >
-          Back to dashboard
-        </Link>
-      </div>
+    <>
+      <AppHeader />
+      <main className="mx-auto max-w-2xl space-y-6 px-4 py-8">
+      <h1 className="text-lg font-semibold">Check-in history</h1>
 
       {!checkins || checkins.length === 0 ? (
         <p className="text-sm text-muted-foreground">No check-ins yet.</p>
@@ -111,6 +105,7 @@ export default async function HistoryPage() {
           })}
         </div>
       )}
-    </div>
+      </main>
+    </>
   );
 }

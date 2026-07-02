@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Productivity Score",
+  title: "Vitals — The vitals of your workday",
   description:
     "Turn your real work activity into performance scores: focus, output, consistency.",
 };

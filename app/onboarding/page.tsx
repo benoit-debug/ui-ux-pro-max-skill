@@ -12,7 +12,7 @@ export default function OnboardingWelcomePage() {
 
         <div className="space-y-2 text-center">
           <h1 className="text-xl font-semibold tracking-tight">
-            Welcome to Productivity Score
+            Welcome to Vitals
           </h1>
           <p className="text-sm text-muted-foreground">
             Two 15-second check-ins a day. We measure your focus, your output,

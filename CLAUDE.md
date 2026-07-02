@@ -16,7 +16,7 @@ The `packages/ui-ux-pro-max-skill/` package is untouched in behavior — see `pa
 
 ## SaaS project overview
 
-A dashboard that turns real work activity into productivity scores (Whoop-style), with a personal analytics view and a group view with a weekly leaderboard. Target users: solopreneurs, freelancers, small tech teams.
+**Vitals** ("The vitals of your workday") — a dashboard that turns real work activity into productivity scores (Whoop-style), with a personal analytics view and a group view with a weekly leaderboard. Target users: solopreneurs, freelancers, small tech teams.
 
 Stack: Next.js (App Router, TypeScript strict), Supabase (Postgres, Auth, RLS everywhere), Tailwind CSS, Recharts. Local Supabase dev via Supabase CLI/Docker — no hosted project during MVP development.
 

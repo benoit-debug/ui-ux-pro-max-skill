@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/ui/link-button";
+import { AppHeader } from "@/components/app-header";
 import { TrendChart } from "@/components/dashboard/trend-chart";
-import { signOut } from "@/lib/auth/actions";
+import { ScoreRing } from "@/components/dashboard/score-ring";
 import { createClient } from "@/lib/supabase/server";
 import { getScoreHistory } from "@/lib/dashboard/queries";
 import { findTopInsight } from "@/lib/insights/correlation";
@@ -85,19 +84,22 @@ export default async function DashboardPage() {
   const goals = (checkin?.goals ?? []) as Goal[];
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 px-4 py-10">
+    <>
+      <AppHeader />
+      <main className="mx-auto max-w-2xl space-y-6 px-4 py-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-semibold">
             Welcome{profile?.full_name ? `, ${profile.full_name}` : ""}
           </h1>
-          <p className="text-sm text-muted-foreground">Timezone: {timezone}</p>
+          <p className="text-sm text-muted-foreground">
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+            })}
+          </p>
         </div>
-        <form action={signOut}>
-          <Button type="submit" variant="ghost">
-            Sign out
-          </Button>
-        </form>
       </div>
 
       <div className="flex gap-3">
@@ -115,22 +117,21 @@ export default async function DashboardPage() {
         </CardHeader>
         <CardContent>
           {score ? (
-            <div className="space-y-4">
-              <p className="text-4xl font-semibold tabular-nums">
-                {score.composite_score ?? "-"}
-                <span className="text-base font-normal text-muted-foreground">/100</span>
-              </p>
-              <dl className="space-y-3 text-sm">
+            <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
+              <ScoreRing score={score.composite_score} />
+              <dl className="flex-1 space-y-3 text-sm">
                 <div>
-                  <dt className="font-medium">Focus {score.focus_score ?? "-"}/100</dt>
+                  <dt className="font-medium">Focus {score.focus_score ?? "—"}/100</dt>
                   <dd className="text-muted-foreground">{score.focus_explanation}</dd>
                 </div>
                 <div>
-                  <dt className="font-medium">Output {score.output_score ?? "-"}/100</dt>
+                  <dt className="font-medium">Output {score.output_score ?? "—"}/100</dt>
                   <dd className="text-muted-foreground">{score.output_explanation}</dd>
                 </div>
                 <div>
-                  <dt className="font-medium">Consistency {score.consistency_score ?? "-"}/100</dt>
+                  <dt className="font-medium">
+                    Consistency {score.consistency_score ?? "—"}/100
+                  </dt>
                   <dd className="text-muted-foreground">{score.consistency_explanation}</dd>
                 </div>
               </dl>
@@ -226,17 +227,7 @@ export default async function DashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="flex justify-center gap-6 text-sm text-muted-foreground">
-        <Link href="/history" className="underline underline-offset-4">
-          Check-in history
-        </Link>
-        <Link href="/groups" className="underline underline-offset-4">
-          Groups
-        </Link>
-        <Link href="/account" className="underline underline-offset-4">
-          Account
-        </Link>
-      </div>
-    </div>
+      </main>
+    </>
   );
 }

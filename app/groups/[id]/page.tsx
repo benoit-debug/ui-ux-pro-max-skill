@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/ui/form-error";
 import { Input } from "@/components/ui/input";
+import { AppHeader } from "@/components/app-header";
 import {
   createInviteLink,
   leaveGroup,
@@ -70,7 +71,9 @@ export default async function GroupPage({
   const participates = membership?.participates_in_ranking ?? false;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 px-4 py-10">
+    <>
+      <AppHeader />
+      <main className="mx-auto max-w-2xl space-y-6 px-4 py-8">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">{group.name}</h1>
         <Link
@@ -143,6 +146,7 @@ export default async function GroupPage({
           Leave group
         </Button>
       </form>
-    </div>
+      </main>
+    </>
   );
 }
