@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { syncCalendarForDay } from "@/lib/calendar/sync";
+import { computeAndStoreDailyScore } from "@/lib/scoring/persist";
 import { todayInTimezone } from "@/lib/time/today";
 
 type Difficulty = "low" | "medium" | "high";
@@ -68,6 +69,7 @@ export async function saveMorningCheckin(formData: FormData) {
   }
 
   await syncCalendarForDay(supabase, user.id, day, timezone);
+  await computeAndStoreDailyScore(supabase, user.id, day);
 
   redirect(redirectTo);
 }
@@ -106,6 +108,7 @@ export async function saveEveningCheckout(formData: FormData) {
   }
 
   await syncCalendarForDay(supabase, user.id, day, timezone);
+  await computeAndStoreDailyScore(supabase, user.id, day);
 
   redirect("/dashboard");
 }

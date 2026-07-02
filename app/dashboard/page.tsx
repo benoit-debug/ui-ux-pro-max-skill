@@ -55,6 +55,17 @@ export default async function DashboardPage() {
         .maybeSingle()
     : { data: null };
 
+  const { data: score } = user
+    ? await supabase
+        .from("daily_scores")
+        .select(
+          "composite_score, focus_score, output_score, consistency_score, focus_explanation, output_explanation, consistency_explanation",
+        )
+        .eq("user_id", user.id)
+        .eq("day", today)
+        .maybeSingle()
+    : { data: null };
+
   const goals = (checkin?.goals ?? []) as Goal[];
 
   return (
@@ -81,6 +92,40 @@ export default async function DashboardPage() {
           Evening check-out
         </LinkButton>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Today&apos;s score</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {score ? (
+            <div className="space-y-4">
+              <p className="text-4xl font-semibold tabular-nums">
+                {score.composite_score ?? "-"}
+                <span className="text-base font-normal text-muted-foreground">/100</span>
+              </p>
+              <dl className="space-y-3 text-sm">
+                <div>
+                  <dt className="font-medium">Focus {score.focus_score ?? "-"}/100</dt>
+                  <dd className="text-muted-foreground">{score.focus_explanation}</dd>
+                </div>
+                <div>
+                  <dt className="font-medium">Output {score.output_score ?? "-"}/100</dt>
+                  <dd className="text-muted-foreground">{score.output_explanation}</dd>
+                </div>
+                <div>
+                  <dt className="font-medium">Consistency {score.consistency_score ?? "-"}/100</dt>
+                  <dd className="text-muted-foreground">{score.consistency_explanation}</dd>
+                </div>
+              </dl>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Scores appear after your first morning check-in.
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -137,8 +182,8 @@ export default async function DashboardPage() {
       </Card>
 
       <p className="text-sm text-muted-foreground">
-        The full scoring dashboard (Focus / Output / Consistency, trends,
-        history) lands in a later build step.
+        Trends (7/30-day charts), correlations, and check-in history land in
+        a later build step.
       </p>
     </div>
   );
