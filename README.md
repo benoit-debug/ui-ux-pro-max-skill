@@ -262,6 +262,28 @@ Install directly in Claude Code with two commands:
 /plugin install ui-ux-pro-max@ui-ux-pro-max-skill
 ```
 
+### Optional: 21st.dev component MCP
+
+This project ships a `.mcp.json` that registers the [21st.dev](https://21st.dev)
+component MCP server, giving Claude Code access to UI component search and
+generation alongside this skill.
+
+The server reads your API key from the `TWENTYFIRST_API_KEY` environment
+variable — the key is **not** committed to the repo. To enable it:
+
+```bash
+# Add your key to a local .env (already gitignored) or your shell profile
+export TWENTYFIRST_API_KEY="21st_sk_your_key_here"
+```
+
+Get a key at [21st.dev](https://21st.dev). Optionally install the matching
+plugin in Claude Code:
+
+```
+/plugin marketplace add 21st-dev/claude-code-plugin
+/plugin install 21st@21st
+```
+
 ### Using CLI (Recommended)
 
 ```bash
